@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>PA-CAG Eligibility Checker</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--ink:#162033;--muted:#667085;--line:#d8deea;--pri:#1268d6;--pri2:#2c9be8;--ok:#157347;--okbg:#e9f8f0;--warn:#9a6700;--warnbg:#fff7df;--bad:#b42318;--badbg:#fff0ef;--info:#0b5394;--infobg:#eef6ff}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,"Noto Sans Thai","Segoe UI",sans-serif;color:var(--ink)}
+.wrap{max-width:1100px;margin:auto;padding:18px}.hero{background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;border-radius:20px;padding:24px;box-shadow:0 12px 28px #1232}.hero h1{margin:0 0 8px;font-size:30px}.hero p{margin:0;line-height:1.55}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:16px;box-shadow:0 4px 16px #15213a0b}.card h2{font-size:21px;margin:0 0 12px}.card h3{font-size:16px;margin:18px 0 10px}.subhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.tag{font-size:12px;font-weight:800;border-radius:999px;padding:4px 9px;background:#eef4ff;color:#154f9f}.tag.req{background:#fff1f0;color:#a52a20}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}@media(max-width:760px){.grid,.grid3{grid-template-columns:1fr}.wrap{padding:12px}.hero h1{font-size:27px}}
+.field{margin:9px 0}label.title{display:block;font-weight:750;font-size:14px;margin-bottom:6px}select,input[type=number],input[type=text]{width:100%;border:1px solid #cfd6e4;border-radius:11px;padding:12px;background:#fff;font-size:16px;color:var(--ink)}.check{display:flex;gap:9px;align-items:flex-start;border:1px solid #e2e7ef;border-radius:11px;padding:9px 10px;margin:7px 0;background:#fff;font-weight:560;line-height:1.4}.check input{margin-top:3px;transform:scale(1.08)}.muted{font-size:13px;color:var(--muted);line-height:1.55}.section{border-top:1px dashed var(--line);padding-top:14px;margin-top:15px}.testbox{border:1px solid #dce3ee;background:#fbfcfe;border-radius:13px;padding:12px;margin:10px 0}.testbox summary{font-weight:800;cursor:pointer}.note,.info{border-radius:12px;padding:11px 12px;margin-top:12px;font-size:13px;line-height:1.5}.note{background:var(--warnbg);border:1px solid #e6cc7a}.info{background:var(--infobg);border:1px solid #a8d0f4}.sticky{position:sticky;bottom:0;background:#f4f7fbe8;backdrop-filter:blur(8px);padding:10px 0 6px;z-index:3}.btn{width:100%;border:0;border-radius:13px;padding:14px 16px;font-size:17px;font-weight:850;cursor:pointer}.btn.primary{background:var(--pri);color:#fff}.btn.secondary{margin-top:8px;background:#e9edf4;color:#344054}.result{border-radius:17px;padding:18px;margin-top:16px}.result.ok{background:var(--okbg);border:1px solid #8ccdad}.result.warn{background:var(--warnbg);border:1px solid #e4c56c}.result.bad{background:var(--badbg);border:1px solid #e7a39d}.result h2{margin:0 0 8px}.result ul{margin:8px 0 0;padding-left:20px}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}.metric{background:#fff8;border:1px solid #dfe5ec;border-radius:12px;padding:10px}.metric span{font-size:12px;color:#667085}.metric b{display:block;font-size:20px;margin-top:4px}@media(max-width:760px){.metrics{grid-template-columns:repeat(2,1fr)}}
+.pathbox{border-left:5px solid var(--pri)}.pathbox[data-path="icm"]{border-left-color:#7b61b3}.pathbox[data-path="preop"]{border-left-color:#c56a1a}.pathbox[data-path="acute"]{border-left-color:#b42318}.path-title{display:flex;justify-content:space-between;gap:10px;align-items:start}.smallcaps{font-size:12px;font-weight:850;letter-spacing:.02em;color:#667085}.footer{font-size:12px;color:#687386;padding:20px 2px 38px;line-height:1.6}
+
+/* ===== v3 Tabs: pure CSS navigation ===== */
+.path-tabs{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+  margin-top:16px;
+}
+.path-tabs input[type="radio"]{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+.path-tabs label{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:58px;
+  padding:10px 9px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#fff;
+  color:#344054;
+  font-weight:800;
+  font-size:14px;
+  line-height:1.25;
+  text-align:center;
+  cursor:pointer;
+  box-shadow:0 2px 8px #15213a0a;
+}
+.path-tabs label:active{transform:translateY(1px)}
+#tab-ccs:checked + label{background:#eaf3ff;border-color:#7fb2ef;color:#0d5fbd;box-shadow:0 0 0 2px #1268d61f}
+#tab-icm:checked + label{background:#f3effb;border-color:#a995cf;color:#6746a2;box-shadow:0 0 0 2px #7b61b31f}
+#tab-preop:checked + label{background:#fff3e9;border-color:#e3a875;color:#a8530e;box-shadow:0 0 0 2px #c56a1a1f}
+#tab-acute:checked + label{background:#fff0ef;border-color:#e5a09a;color:#a91e16;box-shadow:0 0 0 2px #b423181f}
+
+.tab-panel{display:none}
+body:has(#tab-ccs:checked) #ccsSection{display:block}
+body:has(#tab-icm:checked) #icmSection{display:block}
+body:has(#tab-preop:checked) #preopSection{display:block}
+body:has(#tab-acute:checked) #acuteSection{display:block}
+
+/* Fallback for browsers without :has(): JS adds .active-tab-panel */
+.tab-panel.active-tab-panel{display:block}
+
+@media(max-width:760px){
+  .path-tabs{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    position:sticky;
+    top:0;
+    z-index:8;
+    background:var(--bg);
+    padding:8px 0;
+    margin-top:8px;
+  }
+  .path-tabs label{
+    min-height:52px;
+    font-size:13px;
+    padding:8px 6px;
+  }
+}
+
+
+.hero .credit{margin:4px 0 0;font-size:14px;font-weight:650;opacity:.94}
+.path-tabs{margin:16px 0 2px}
+.symptom-section{margin-top:14px}
+.score-pill{margin-left:auto;background:#eef6ff;color:#0b5394;border:1px solid #b8d7f3;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:850}
+.symptom-choice-grid{display:grid;grid-template-columns:1fr;gap:9px;margin-top:10px}
+.choice-card{display:flex;gap:11px;align-items:flex-start;border:1px solid #dce3ee;border-radius:14px;padding:12px;background:#fff;cursor:pointer;transition:.15s}
+.choice-card:has(input:checked){border-color:#7fb2ef;background:#f0f7ff;box-shadow:0 0 0 2px #1268d617}
+.choice-card input{margin-top:4px;transform:scale(1.15)}
+.choice-card span{display:flex;flex-direction:column;gap:3px}
+.choice-card small{font-size:12px;color:var(--muted);line-height:1.45}
+.cp-criteria{display:none;margin-top:12px;border:1px solid #cfe1f5;border-radius:14px;padding:12px;background:#f8fbff}
+body:has(#ccsSymCP:checked) #ccsChestPainCriteria{display:block}
+.cp-criteria.active{display:block}
+.criteria-title{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px}
+.criteria-title span{font-size:12px;font-weight:800;color:#1268d6}
+.criterion-row{display:grid;grid-template-columns:auto 28px 1fr auto;gap:9px;align-items:start;padding:10px 4px;border-top:1px solid #e0ebf7;line-height:1.45;cursor:pointer}
+.criterion-row:first-of-type{border-top:0}
+.criterion-row input{margin-top:4px;transform:scale(1.08)}
+.criterion-no{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#e9f3ff;color:#1268d6;font-size:12px;font-weight:900}
+.criterion-row>b{color:#1268d6;font-size:13px}
+
+.optional-tests{display:grid;grid-template-columns:1fr;gap:9px;margin-top:10px}
+.optional-test{position:relative;border:1px solid #dce3ee;border-radius:14px;background:#fbfcfe;overflow:hidden}
+.optional-test>.test-toggle{position:absolute;opacity:0;pointer-events:none}
+.test-toggle-label{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 13px;cursor:pointer;background:#fff}
+.test-toggle-label span:first-child{display:flex;flex-direction:column;gap:2px}
+.test-toggle-label small{font-size:12px;color:var(--muted);font-weight:500}
+.toggle-mark{width:28px;height:28px;border-radius:50%;background:#eef4ff;color:#1268d6;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;line-height:1}
+.test-toggle:checked + .test-toggle-label{background:#f2f7ff}
+.test-toggle:checked + .test-toggle-label .toggle-mark{background:#1268d6;color:#fff}
+.test-toggle:checked + .test-toggle-label .toggle-mark{font-size:0}
+.test-toggle:checked + .test-toggle-label .toggle-mark:after{content:"✓";font-size:16px}
+.test-content{display:none;border-top:1px solid #e3e8f0;padding:12px;background:#fbfcfe}
+.test-toggle:checked ~ .test-content{display:block}
+.test-content.active{display:block}
+.echo-optional{margin-top:8px}
+@media(max-width:760px){
+  .path-tabs{margin-top:12px}
+  .criteria-title{align-items:flex-start;flex-direction:column}
+}
+
+
+.final-summary{
+  margin:10px 0 14px;
+  padding:11px 13px;
+  border-radius:12px;
+  font-size:15px;
+  font-weight:900;
+  letter-spacing:.1px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.final-summary.met{background:#eaf8ef;border:1px solid #9bd4ae;color:#176b35}
+.final-summary.notmet{background:#fff0ef;border:1px solid #efaaa4;color:#9d241c}
+.final-summary.indeterminate{background:#fff7e6;border:1px solid #e8c87c;color:#875d00}
+.final-summary.na{background:#eef4ff;border:1px solid #b8cff5;color:#214f9b}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <h1>PA-CAG Eligibility Checker</h1>
+    <p class="credit">Developed by PSU Heart Center · Developer: Theerapat Buppodom</p>
+  </div>
+<div class="path-tabs" role="tablist" aria-label="Clinical pathway">
+      <input type="radio" name="pathwayTab" id="tab-ccs" value="ccs" checked>
+      <label for="tab-ccs" role="tab">CCS</label>
+
+      <input type="radio" name="pathwayTab" id="tab-icm" value="icm">
+      <label for="tab-icm" role="tab">Ischemic<br>cardiomyopathy</label>
+
+      <input type="radio" name="pathwayTab" id="tab-preop" value="preop">
+      <label for="tab-preop" role="tab">Pre-operative</label>
+
+      <input type="radio" name="pathwayTab" id="tab-acute" value="acute">
+      <label for="tab-acute" role="tab">ACS /<br>Post-arrest</label>
+    </div>
+
+<section class="card pathbox tab-panel" data-path="ccs" id="ccsSection">
+    <div class="path-title"><div><div class="smallcaps">PATHWAY A</div><h2>Chronic coronary syndrome (CCS)</h2></div><span class="tag req">Resting ECG mandatory</span></div>
+    <h3>A1. Clinical likelihood of obstructive CAD</h3>
+    <div class="grid"><div class="field"><label class="title">เพศ</label><select id="ccsSex"><option value="">— เลือก —</option><option value="F">หญิง</option><option value="M">ชาย</option></select></div><div class="field"><label class="title">อายุ (ปี)</label><input id="ccsAge" type="number" min="18" max="120" placeholder="เช่น 62"></div></div>
+
+    
+    <div class="section symptom-section">
+      <div class="subhead">
+        <h3>Symptom score (0–3 คะแนน)</h3>
+        <span class="score-pill" id="symptomScorePreview">ยังไม่เลือกอาการ</span>
+      </div>
+
+      <div class="symptom-choice-grid">
+        <label class="choice-card">
+          <input type="radio" name="ccsSymType" id="ccsSymCP" value="cp">
+          <span>
+            <b>มีอาการเจ็บหน้าอก</b>
+            <small>ให้เลือกองค์ประกอบด้านล่าง ข้อละ 1 คะแนน สูงสุด 3 คะแนน</small>
+          </span>
+        </label>
+
+        <label class="choice-card">
+          <input type="radio" name="ccsSymType" id="ccsSymDOE" value="doe">
+          <span>
+            <b>เหนื่อยง่ายเวลาออกแรง/ออกกำลังกาย โดยไม่มีอาการเจ็บหน้าอก</b>
+            <small>กำหนด Symptom score = 2 คะแนน</small>
+          </span>
+        </label>
+
+        <label class="choice-card">
+          <input type="radio" name="ccsSymType" id="ccsSymNone" value="none">
+          <span>
+            <b>ไม่มีอาการตาม 2 กลุ่มข้างต้น</b>
+            <small>Symptom score = 0 คะแนน</small>
+          </span>
+        </label>
+      </div>
+
+      <div id="ccsChestPainCriteria" class="cp-criteria">
+        <div class="criteria-title">
+          <b>กรณีมีอาการเจ็บหน้าอก — เลือกข้อที่พบ</b>
+          <span>ข้อละ +1 คะแนน</span>
+        </div>
+        <label class="criterion-row">
+          <input type="checkbox" id="ccsCp1">
+          <span class="criterion-no">1</span>
+          <span>เจ็บแน่น/บีบรัดบริเวณหลังกระดูกหน้าอก หรือร้าวไปที่คอ กราม ไหล่ หรือแขน</span>
+          <b>+1</b>
+        </label>
+        <label class="criterion-row">
+          <input type="checkbox" id="ccsCp2">
+          <span class="criterion-no">2</span>
+          <span>อาการถูกกระตุ้นโดยการออกแรงทางกาย หรือความเครียดทางอารมณ์</span>
+          <b>+1</b>
+        </label>
+        <label class="criterion-row">
+          <input type="checkbox" id="ccsCp3">
+          <span class="criterion-no">3</span>
+          <span>อาการทุเลาเมื่อพัก หรือหลังได้รับยา nitrate ภายใน 5 นาที</span>
+          <b>+1</b>
+        </label>
+      </div>
+    </div>
+
+
+
+    <h3>ปัจจัยเสี่ยง CAD (นับเป็น 5 ปัจจัย)</h3>
+    <label class="check"><input type="checkbox" id="ccsFH"> Family history premature CAD: ญาติสายตรงลำดับที่ 1 ชายเริ่ม CAD ≤55 ปี หรือหญิง ≤65 ปี</label>
+    <label class="check"><input type="checkbox" id="ccsSmoke"> มีประวัติสูบบุหรี่</label>
+    <div class="testbox"><b>Dyslipidemia = 1 risk factor หากมีอย่างน้อยหนึ่งข้อ</b>
+      <label class="check"><input type="checkbox" id="ccsLDL"> LDL-C &gt;130 mg/dL</label>
+      <label class="check"><input type="checkbox" id="ccsHDL"> HDL-C &lt;40 mg/dL</label>
+      <label class="check"><input type="checkbox" id="ccsLipidRx"> กำลังรับประทานยาลดไขมันในเลือด</label>
+    </div>
+    <label class="check"><input type="checkbox" id="ccsHT"> เคยได้รับการวินิจฉัยความดันโลหิตสูง</label>
+    <label class="check"><input type="checkbox" id="ccsDM"> โรคเบาหวาน</label>
+
+    <div class="section"><div class="subhead"><h3>A2. Resting ECG</h3><span class="tag req">mandatory document</span></div>
+      <div class="field"><label class="title">ผล ECG ตามนิยามในเกณฑ์</label><select id="ccsECG"><option value="unknown">— ยังไม่ระบุ —</option><option value="nonischemic">ไม่เข้า ischemic ECG</option><option value="deepq">Deep Q อย่างน้อย 2 leads</option><option value="invt">Deep inverted T โดยไม่มี LVH, LBBB, RBBB, WPW</option><option value="stdep">ST depression โดยไม่มี LVH, LBBB, RBBB, WPW</option><option value="multiple">มีมากกว่า 1 ischemic finding ข้างต้น</option></select></div>
+      <label class="check"><input type="checkbox" id="ccsDocECG"> มีหลักฐาน Resting ECG: ภาพ ECG ± ผลอ่าน + วันที่/เวลา + ชื่อผู้ป่วย + เลขประชาชน</label>
+    </div>
+
+    
+    <div class="section">
+      <h3>A3. Echocardiography</h3>
+      <div class="optional-test echo-optional">
+        <input class="test-toggle" type="checkbox" id="ccsEchoDone">
+        <label class="test-toggle-label" for="ccsEchoDone">
+          <span><b>มีผล Echocardiography</b><small>เลือกเมื่อมีผลตรวจ Echo</small></span>
+          <span class="toggle-mark">+</span>
+        </label>
+        <div class="test-content" id="ccsEchoContent">
+          <label class="check"><input type="checkbox" id="ccsRWMA"> Regional wall motion abnormality</label>
+          <div class="field"><label class="title">LVEF (%)</label><input id="ccsEF" type="number" min="1" max="90" placeholder="เช่น 35"></div>
+          <label class="check"><input type="checkbox" id="ccsDocEcho"> มี official echocardiography report + วันที่/เวลา + ชื่อผู้ป่วย + เลขประชาชน</label>
+        </div>
+      </div>
+    </div>
+
+<div class="section">
+      <h3>A4–A9. การตรวจเพิ่มเติม</h3>
+      <div class="muted">เลือกเฉพาะการตรวจที่มีผลตรวจอยู่ แล้วจึงระบุผลตามเกณฑ์</div>
+      <div class="optional-tests">
+
+    <div class="optional-test">
+      <input class="test-toggle" type="checkbox" id="ccsESTDone">
+      <label class="test-toggle-label" for="ccsESTDone">
+        <span><b>A4. Exercise ECG (EST)</b><small>เลือกเมื่อมีผลตรวจนี้</small></span>
+        <span class="toggle-mark">+</span>
+      </label>
+      <div class="test-content" id="ccsESTContent">
+        <div class="field">
+          <label class="title">ผลการตรวจตามเกณฑ์</label>
+          <select id="ccsESTResult"><option value="">— เลือกผลการตรวจ —</option><option value="negative">ไม่เข้าเกณฑ์ความผิดปกติตาม PA-CAG</option><option value="stdep">Horizontal/downsloping ST depression (baseline ST depression <0.5 mm) at low workload ≤5 METs</option><option value="stelev">ST elevation ใน lead ที่ไม่มี Q wave</option><option value="hypotension">Hypotension during exercise</option><option value="vtvf">Ventricular tachycardia (VT) / Ventricular fibrillation (VF)</option><option value="multiple">มีมากกว่า 1 qualifying finding ข้างต้น</option></select>
+        </div>
+        <label class="check"><input type="checkbox" id="ccsDocEST"> มีภาพ EST (pre-exercise, peak exercise, หลัง 2 นาที post recovery) + ผลอ่าน + วันที่/เวลา + ชื่อผู้ป่วย + เลขประชาชน</label>
+      </div>
+    </div>
+    <div class="optional-test">
+      <input class="test-toggle" type="checkbox" id="ccsCTADone">
+      <label class="test-toggle-label" for="ccsCTADone">
+        <span><b>A5. Coronary CTA</b><small>เลือกเมื่อมีผลตรวจนี้</small></span>
+        <span class="toggle-mark">+</span>
+      </label>
+      <div class="test-content" id="ccsCTAContent">
+        <div class="field">
+          <label class="title">ผลการตรวจตามเกณฑ์</label>
+          <select id="ccsCTAResult"><option value="">— เลือกผลการตรวจ —</option><option value="negative">ไม่เข้าเกณฑ์ความผิดปกติตาม PA-CAG</option><option value="lm">LM stenosis >50%</option><option value="tvd">Triple-vessel disease stenosis >70%</option><option value="plad">Severe proximal LAD stenosis >70%</option><option value="multiple">มีมากกว่า 1 qualifying finding ข้างต้น</option></select>
+        </div>
+        <label class="check"><input type="checkbox" id="ccsDocCTA"> มี official Coronary CTA report + วันที่/เวลา + ชื่อผู้ป่วย + เลขประชาชน</label>
+      </div>
+    </div>
+    <div class="optional-test">
+      <input class="test-toggle" type="checkbox" id="ccsCMRDone">
+      <label class="test-toggle-label" for="ccsCMRDone">
+        <span><b>A6. Stress Cardiac MRI</b><small>เลือกเมื่อมีผลตรวจนี้</small></span>
+        <span class="toggle-mark">+</span>
+      </label>
+      <div class="test-content" id="ccsCMRContent">
+        <div class="field">
+          <label class="title">ผลการตรวจตามเกณฑ์</label>
+          <select id="ccsCMRResult"><option value="">— เลือกผลการตรวจ —</option><option value="negative">ไม่เข้าเกณฑ์ความผิดปกติตาม PA-CAG</option><option value="ischemia">Ischemia >10% ของ area กล้ามเนื้อหัวใจ</option></select>
+        </div>
+        <label class="check"><input type="checkbox" id="ccsDocCMR"> มี official Stress Cardiac MRI report + วันที่/เวลา + ชื่อผู้ป่วย + เลขประชาชน</label>
+      </div>
+    </div>
+    <div class="optional-test">
+      <input class="test-toggle" type="checkbox" id="ccsDSEDone">
+      <label class="test-toggle-label" for="ccsDSEDone">
+        <span><b>A7. Dobutamine stress echo</b><small>เลือกเมื่อมีผลตรวจนี้</small></span>
+        <span class="toggle-mark">+</span>
+      </label>
+      <div class="test-content" id="ccsDSEContent">
+        <div class="field">
+          <label class="title">ผลการตรวจตามเกณฑ์</label>
+          <select id="ccsDSEResult"><option value="">— เลือกผลการตรวจ —</option><option value="negative">ไม่เข้าเกณฑ์ความผิดปกติตาม PA-CAG</option><option value="ischemia">Ischemia >10% ของ area กล้ามเนื้อหัวใจ</option></select>
+        </div>
+        <label class="check"><input type="checkbox" id="ccsDocDSE"> มี official Dobutamine stress echo report + วันที่/เวลา + ชื่อผู้ป่วย + เลขประชาชน</label>
+      </div>
+    </div>
+    <div class="optional-test">
+      <input class="test-toggle" type="checkbox" id="ccsESEDone">
+      <label class="test-toggle-label" for="ccsESEDone">
+        <span><b>A8. Exercise stress echo</b><small>เลือกเมื่อมีผลตรวจนี้</small></span>
+        <span class="toggle-mark">+</span>
+      </label>
+      <div class="test-content" id="ccsESEContent">
+        <div class="field">
+          <label class="title">ผลการตรวจตามเกณฑ์</label>
+          <select id="ccsESEResult"><option value="">— เลือกผลการตรวจ —</option><option value="negative">ไม่เข้าเกณฑ์ความผิดปกติตาม PA-CAG</option><option value="lowlevel">Positive at low level of exercise</option><option value="lvdilate">Stress-induced LV dilatation หรือ increase LV end-systolic volume</option><option value="ischemia">Ischemia >10% ของ area กล้ามเนื้อหัวใจ</option><option value="multiple">มีมากกว่า 1 qualifying finding ข้างต้น</option></select>
+        </div>
+        <label class="check"><input type="checkbox" id="ccsDocESE"> มี official Exercise stress echo report + วันที่/เวลา + ชื่อผู้ป่วย + เลขประชาชน</label>
+      </div>
+    </div>
+    <div class="optional-test">
+      <input class="test-toggle" type="checkbox" id="ccsMIBIDone">
+      <label class="test-toggle-label" for="ccsMIBIDone">
+        <span><b>A9. MIBI cardiac scan</b><small>เลือกเมื่อมีผลตรวจนี้</small></span>
+        <span class="toggle-mark">+</span>
+      </label>
+      <div class="test-content" id="ccsMIBIContent">
+        <div class="field">
+          <label class="title">ผลการตรวจตามเกณฑ์</label>
+          <select id="ccsMIBIResult"><option value="">— เลือกผลการตรวจ —</option><option value="negative">ไม่เข้าเกณฑ์ความผิดปกติตาม PA-CAG</option><option value="ischemia">Ischemia >10% ของ area กล้ามเนื้อหัวใจ</option></select>
+        </div>
+        <label class="check"><input type="checkbox" id="ccsDocMIBI"> มี official MIBI cardiac scan report + วันที่/เวลา + ชื่อผู้ป่วย + เลขประชาชน</label>
+      </div>
+    </div>
+      </div>
+    </div>
+
+  </section>
+
+  <section class="card pathbox tab-panel" data-path="icm" id="icmSection">
+    <div class="path-title"><div><div class="smallcaps">PATHWAY B</div><h2>Ischemic cardiomyopathy</h2></div><span class="tag req">ECG + Echo mandatory</span></div>
+    <div class="grid"><div class="field"><label class="title">อายุ (ปี)</label><input id="icmAge" type="number" min="18" max="120"></div><div class="field"><label class="title">LVEF (%)</label><input id="icmEF" type="number" min="1" max="90"></div></div>
+    <h3>Risk factors ตามเกณฑ์ ICM</h3>
+    <label class="check"><input type="checkbox" id="icmDM"> DM</label><label class="check"><input type="checkbox" id="icmHT"> HT</label><label class="check"><input type="checkbox" id="icmSmoke"> Smoking</label>
+    <div class="testbox"><b>Dyslipidemia</b><label class="check"><input type="checkbox" id="icmLDL"> LDL-C &gt;130 mg/dL</label><label class="check"><input type="checkbox" id="icmHDL"> HDL-C &lt;40 mg/dL</label><label class="check"><input type="checkbox" id="icmLipidRx"> กำลังรับประทานยาลดไขมัน</label></div>
+    <h3>Echocardiography</h3>
+    <label class="check"><input type="checkbox" id="icmDCM"> Echocardiography รายงาน dilated cardiomyopathy / LV dilatation</label>
+    <label class="check"><input type="checkbox" id="icmGlobal"> LV global hypokinesia</label>
+    <label class="check"><input type="checkbox" id="icmDocEcho"> มี official echocardiography report + วันที่/เวลา + ข้อมูลผู้ป่วย</label>
+    <div class="note">เอกสารเกณฑ์ส่วน criterion ใช้คำว่า <b>dilated cardiomyopathy with LVEF &lt;40%</b> และหมายเหตุท้ายเอกสารอธิบาย echocardiography ใน cardiomyopathy ว่า <b>LV global hypokinesia และ LVEF &lt;40%</b>. โปรแกรมจะแสดงทั้งสอง finding แยกกันและไม่ซ่อนความแตกต่างของ wording.</div>
+    <h3>Resting ECG</h3>
+    <div class="field"><label class="title">ผล ECG</label><select id="icmECG"><option value="unknown">— ยังไม่ระบุ —</option><option value="nonischemic">ไม่เข้า ischemic ECG</option><option value="deepq">Deep Q ≥2 leads</option><option value="invt">Deep inverted T โดยไม่มี LVH/LBBB/RBBB/WPW</option><option value="stdep">ST depression โดยไม่มี LVH/LBBB/RBBB/WPW</option><option value="multiple">มากกว่า 1 ischemic finding</option></select></div>
+    <label class="check"><input type="checkbox" id="icmDocECG"> มีหลักฐาน Resting ECG ตามข้อกำหนด</label>
+
+    
+    <h3>Qualifying ischemia tests</h3>
+    <div class="muted">เลือกเฉพาะการตรวจที่มีผลตรวจอยู่ ระบบจะใช้ผลเหล่านี้เมื่อเกณฑ์ต้องการหลักฐาน myocardial ischemia</div>
+    <div class="optional-tests">
+
+    <div class="optional-test">
+      <input class="test-toggle" type="checkbox" id="icmESTDone">
+      <label class="test-toggle-label" for="icmESTDone">
+        <span><b>Exercise ECG (EST)</b><small>เลือกเมื่อมีผลตรวจนี้</small></span>
+        <span class="toggle-mark">+</span>
+      </label>
+      <div class="test-content" id="icmESTContent">
+        <div class="field">
+          <label class="title">ผลการตรวจตามเกณฑ์</label>
+          <select id="icmESTResult"><option value="">— เลือกผลการตรวจ —</option><option value="negative">ไม่เข้าเกณฑ์ความผิดปกติตาม PA-CAG</option><option value="stdep">Horizontal/downsloping ST depression (baseline ST depression <0.5 mm) at low workload ≤5 METs</option><option value="stelev">ST elevation ใน lead ที่ไม่มี Q wave</option><option value="hypotension">Hypotension during exercise</option><option value="vtvf">VT / VF during exercise</option><option value="multiple">มีมากกว่า 1 qualifying finding ข้างต้น</option></select>
+        </div>
+        <label class="check"><input type="checkbox" id="icmDocEST"> มีหลักฐาน EST ตามข้อกำหนด</label>
+      </div>
+    </div>
+    <div class="optional-test">
+      <input class="test-toggle" type="checkbox" id="icmCTADone">
+      <label class="test-toggle-label" for="icmCTADone">
+        <span><b>Coronary CTA</b><small>เลือกเมื่อมีผลตรวจนี้</small></span>
+        <span class="toggle-mark">+</span>
+      </label>
+      <div class="test-content" id="icmCTAContent">
+        <div class="field">
+          <label class="title">ผลการตรวจตามเกณฑ์</label>
+          <select id="icmCTAResult"><option value="">— เลือกผลการตรวจ —</option><option value="negative">ไม่เข้าเกณฑ์ความผิดปกติตาม PA-CAG</option><option value="lm">LM stenosis >50%</option><option value="tvd">Triple-vessel disease stenosis >70%</option><option value="plad">Severe proximal LAD stenosis >70%</option><option value="multiple">มีมากกว่า 1 qualifying finding ข้างต้น</option></select>
+        </div>
+        <label class="check"><input type="checkbox" id="icmDocCTA"> มี official Coronary CTA report</label>
+      </div>
+    </div>
+    <div class="optional-test">
+      <input class="test-toggle" type="checkbox" id="icmCMRDone">
+      <label class="test-toggle-label" for="icmCMRDone">
+        <span><b>Stress Cardiac MRI</b><small>เลือกเมื่อมีผลตรวจนี้</small></span>
+        <span class="toggle-mark">+</span>
+      </label>
+      <div class="test-content" id="icmCMRContent">
+        <div class="field">
+          <label class="title">ผลการตรวจตามเกณฑ์</label>
+          <select id="icmCMRResult"><option value="">— เลือกผลการตรวจ —</option><option value="negative">ไม่เข้าเกณฑ์ความผิดปกติตาม PA-CAG</option><option value="ischemia">Ischemia >10% myocardium</option></select>
+        </div>
+        <label class="check"><input type="checkbox" id="icmDocCMR"> มี official Stress Cardiac MRI report</label>
+      </div>
+    </div>
+    <div class="optional-test">
+      <input class="test-toggle" type="checkbox" id="icmDSEDone">
+      <label class="test-toggle-label" for="icmDSEDone">
+        <span><b>Dobutamine stress echo</b><small>เลือกเมื่อมีผลตรวจนี้</small></span>
+        <span class="toggle-mark">+</span>
+      </label>
+      <div class="test-content" id="icmDSEContent">
+        <div class="field">
+          <label class="title">ผลการตรวจตามเกณฑ์</label>
+          <select id="icmDSEResult"><option value="">— เลือกผลการตรวจ —</option><option value="negative">ไม่เข้าเกณฑ์ความผิดปกติตาม PA-CAG</option><option value="ischemia">Ischemia >10% myocardium</option></select>
+        </div>
+        <label class="check"><input type="checkbox" id="icmDocDSE"> มี official Dobutamine stress echo report</label>
+      </div>
+    </div>
+    <div class="optional-test">
+      <input class="test-toggle" type="checkbox" id="icmESEDone">
+      <label class="test-toggle-label" for="icmESEDone">
+        <span><b>Exercise stress echo</b><small>เลือกเมื่อมีผลตรวจนี้</small></span>
+        <span class="toggle-mark">+</span>
+      </label>
+      <div class="test-content" id="icmESEContent">
+        <div class="field">
+          <label class="title">ผลการตรวจตามเกณฑ์</label>
+          <select id="icmESEResult"><option value="">— เลือกผลการตรวจ —</option><option value="negative">ไม่เข้าเกณฑ์ความผิดปกติตาม PA-CAG</option><option value="lowlevel">Positive at low level of exercise</option><option value="lvdilate">Stress-induced LV dilatation / increased LV end-systolic volume</option><option value="ischemia">Ischemia >10% myocardium</option><option value="multiple">มีมากกว่า 1 qualifying finding ข้างต้น</option></select>
+        </div>
+        <label class="check"><input type="checkbox" id="icmDocESE"> มี official Exercise stress echo report</label>
+      </div>
+    </div>
+    <div class="optional-test">
+      <input class="test-toggle" type="checkbox" id="icmMIBIDone">
+      <label class="test-toggle-label" for="icmMIBIDone">
+        <span><b>MIBI cardiac scan</b><small>เลือกเมื่อมีผลตรวจนี้</small></span>
+        <span class="toggle-mark">+</span>
+      </label>
+      <div class="test-content" id="icmMIBIContent">
+        <div class="field">
+          <label class="title">ผลการตรวจตามเกณฑ์</label>
+          <select id="icmMIBIResult"><option value="">— เลือกผลการตรวจ —</option><option value="negative">ไม่เข้าเกณฑ์ความผิดปกติตาม PA-CAG</option><option value="ischemia">Ischemia >10% myocardium</option></select>
+        </div>
+        <label class="check"><input type="checkbox" id="icmDocMIBI"> มี official MIBI cardiac scan report</label>
+      </div>
+    </div>
+    </div>
+
+  
+  </section>
+
+  <section class="card pathbox tab-panel" data-path="preop" id="preopSection">
+    <div class="path-title"><div><div class="smallcaps">PATHWAY C</div><h2>Pre-operative / non-coronary open-heart surgery / arrhythmia procedure</h2></div><span class="tag">ไม่มี investigation mandatory ในตารางหลักฐาน</span></div>
+    <div class="grid"><div class="field"><label class="title">เพศ</label><select id="preSex"><option value="">— เลือก —</option><option value="M">ชาย</option><option value="F">หญิง</option></select></div><div class="field"><label class="title">อายุ (ปี)</label><input id="preAge" type="number" min="18" max="120"></div></div>
+    <label class="check"><input type="checkbox" id="prePremeno"> Premature menopause</label>
+    <h3>Clinical criteria</h3>
+    <label class="check"><input type="checkbox" id="preSymptoms"> Ischemic symptoms</label>
+    <label class="check"><input type="checkbox" id="preMI"> Previous MI</label><label class="check"><input type="checkbox" id="prePCI"> Previous PCI</label><label class="check"><input type="checkbox" id="preCABG"> Previous CABG</label>
+    <h3>CAD risk factors (อย่างน้อย 1 ข้อ)</h3>
+    <label class="check"><input type="checkbox" id="preDM"> DM</label><label class="check"><input type="checkbox" id="preHT"> HT</label><label class="check"><input type="checkbox" id="preSmoke"> Smoking</label>
+    <div class="testbox"><b>Dyslipidemia</b><label class="check"><input type="checkbox" id="preLDL"> LDL-C &gt;130 mg/dL</label><label class="check"><input type="checkbox" id="preHDL"> HDL-C &lt;40 mg/dL</label><label class="check"><input type="checkbox" id="preLipidRx"> กำลังรับประทานยาลดไขมัน</label></div>
+    <label class="check"><input type="checkbox" id="preFH"> Family history premature CAD: first-degree relative ชาย ≤55 ปี หรือหญิง ≤65 ปี เมื่อเริ่มมี CAD</label>
+    <div class="info">เกณฑ์ในเอกสารระบุ: ชายอายุ ≥45 ปี หรือหญิงอายุ ≥50 ปี หรือ premature menopause <b>หรือ</b> ischemic symptoms <b>หรือ</b> previous MI/PCI/CABG <b>หรือ</b> มี CAD risk factor ≥1 อย่าง.</div>
+  </section>
+
+  <section class="card pathbox tab-panel" data-path="acute" id="acuteSection">
+    <div class="path-title"><div><div class="smallcaps">PATHWAY D</div><h2>NSTE-ACS / STE-ACS / Post-cardiac arrest</h2></div><span class="tag req">ไม่ใช่ PA-CAG ก่อนทำหัตถการ</span></div>
+    <p>ตาม workflow ที่ให้มา กลุ่มนี้เข้าสู่ CAG ± PCI แล้วบันทึก/ส่ง Data form เพื่อ pre-payment audit โดยไม่ต้องรอ PA-CAG ก่อน.</p>
+  </section>
+
+  <div class="sticky"><button class="btn primary" type="button" onclick="analyzePA()">วิเคราะห์โอกาสผ่าน PA</button><button class="btn secondary" type="button" onclick="resetForm()">ล้างข้อมูลทั้งหมด</button></div>
+  <div id="output" aria-live="polite"></div>
+  <div class="footer">เครื่องมือนี้เป็น decision support จากเกณฑ์ที่ผู้ใช้ให้มา ไม่ใช่การอนุมัติจาก สปสช. และไม่แทน physician auditor. เมื่อข้อมูลที่จำเป็นไม่ครบ ระบบจะรายงานว่า “ข้อมูลไม่ครบ/ประเมินไม่ได้” แทนการเดา.</div>
+</div>
+<script>
+
+function getSelectedPathway(){
+  const r = document.querySelector('input[name="pathwayTab"]:checked');
+  return r ? r.value : 'ccs';
+}
+function syncTabPanels(){
+  const value = getSelectedPathway();
+  document.querySelectorAll('.tab-panel').forEach(el => el.classList.remove('active-tab-panel'));
+  const target = document.getElementById(
+    value === 'ccs' ? 'ccsSection' :
+    value === 'icm' ? 'icmSection' :
+    value === 'preop' ? 'preopSection' : 'acuteSection'
+  );
+  if(target) target.classList.add('active-tab-panel');
+}
+
+
+function syncSymptomUI(){
+  const cp=document.getElementById('ccsChestPainCriteria');
+  const checked=document.querySelector('input[name="ccsSymType"]:checked');
+  if(cp)cp.classList.toggle('active',!!checked&&checked.value==='cp');
+}
+function previewSymptomScore(){
+  const checked=document.querySelector('input[name="ccsSymType"]:checked');
+  if(!checked)return null;
+  if(checked.value==='doe')return 2;
+  if(checked.value==='none')return 0;
+  if(checked.value==='cp'){
+    return ['ccsCp1','ccsCp2','ccsCp3'].filter(id=>{
+      const el=document.getElementById(id); return !!(el&&el.checked);
+    }).length;
+  }
+  return null;
+}
+function updateSymptomScorePreview(){
+  const el=document.getElementById('symptomScorePreview'); if(!el)return;
+  const s=previewSymptomScore();
+  el.textContent=s===null?'ยังไม่เลือกอาการ':'Symptom score = '+s;
+}
+
+(function(){
+'use strict';
+const g=id=>document.getElementById(id); const v=id=>g(id)?g(id).value:''; const c=id=>!!(g(id)&&g(id).checked);
+const likelihood={
+  '0-1':{F:[[0,1,2],[1,1,3],[1,2,5],[2,4,7],[4,7,11]],M:[[1,2,5],[2,4,8],[4,7,12],[8,12,17],[15,19,24]]},
+  '2':{F:[[0,1,3],[1,2,5],[2,3,7],[3,6,11],[6,10,16]],M:[[2,4,8],[3,6,12],[6,11,17],[12,17,25],[22,27,34]]},
+  '3':{F:[[2,5,10],[4,7,12],[6,10,15],[10,14,19],[16,19,23]],M:[[9,14,22],[14,20,27],[21,27,33],[32,35,39],[44,44,45]]}
+};
+function ageBand(age){ if(age>=30&&age<=39)return 0;if(age>=40&&age<=49)return 1;if(age>=50&&age<=59)return 2;if(age>=60&&age<=69)return 3;if(age>=70)return 4;return -1; }
+function symptomType(){
+  const r=document.querySelector('input[name="ccsSymType"]:checked');
+  return r?r.value:'';
+}
+function symptomScore(){
+  const t=symptomType();
+  if(t==='doe')return 2;
+  if(t==='cp')return ['ccsCp1','ccsCp2','ccsCp3'].filter(c).length;
+  if(t==='none')return 0;
+  return null;
+}
+function ccsRF(){let n=0;if(c('ccsFH'))n++;if(c('ccsSmoke'))n++;if(c('ccsLDL')||c('ccsHDL')||c('ccsLipidRx'))n++;if(c('ccsHT'))n++;if(c('ccsDM'))n++;return n;}
+function rfCol(n){return n<=1?0:n<=3?1:2;}
+function ischemicECG(id){const x=v(id);return ['deepq','invt','stdep','multiple'].includes(x);}
+function ccsEchoStatus(){
+  if(!c('ccsEchoDone'))return {done:false,abnormal:false};
+  const ef=parseFloat(v('ccsEF'));
+  return {done:true,abnormal:c('ccsRWMA')||(!Number.isNaN(ef)&&ef<40)};
+}
+function testDone(prefix,code){return c(prefix+code+'Done');}
+function testResult(prefix,code){return testDone(prefix,code)?v(prefix+code+'Result'):'';}
+function resultPositive(x){return !!x && x!=='negative';}
+function testPos(prefix){
+  return ['EST','CTA','CMR','DSE','ESE','MIBI'].some(code=>resultPositive(testResult(prefix,code)));
+}
+function incompleteSelectedTests(prefix){
+  const names={EST:'Exercise ECG',CTA:'Coronary CTA',CMR:'Stress CMR',DSE:'Dobutamine stress echo',ESE:'Exercise stress echo',MIBI:'MIBI'};
+  return Object.keys(names).filter(code=>testDone(prefix,code)&&!testResult(prefix,code)).map(code=>names[code]);
+}
+function positiveTests(prefix){
+  const names={EST:'Exercise ECG',CTA:'Coronary CTA',CMR:'Stress CMR',DSE:'Dobutamine stress echo',ESE:'Exercise stress echo',MIBI:'MIBI'};
+  return Object.keys(names).filter(code=>resultPositive(testResult(prefix,code))).map(code=>names[code]);
+}
+function missingDocsForTests(prefix,tests){
+  const map={'Exercise ECG':'EST','Coronary CTA':'CTA','Stress CMR':'CMR','Dobutamine stress echo':'DSE','Exercise stress echo':'ESE','MIBI':'MIBI'};
+  const labels={'EST':'หลักฐาน Exercise ECG','CTA':'official Coronary CTA report','CMR':'official Stress CMR report','DSE':'official Dobutamine stress echo report','ESE':'official Exercise stress echo report','MIBI':'official MIBI report'};
+  const m=[];
+  tests.forEach(name=>{const code=map[name];if(code&&!c(prefix+'Doc'+code))m.push(labels[code]);});
+  return m;
+}
+function summaryLine(status,text){
+  const cls=status==='MET'?'met':status==='NOT MET'?'notmet':status==='INDETERMINATE'?'indeterminate':'na';
+  return '<div class="final-summary '+cls+'">สรุป: '+status+(text?' — '+text:'')+'</div>';
+}
+function box(type,title,html){g('output').innerHTML='<div class="result '+type+'"><h2>'+title+'</h2>'+html+'</div>';g('output').scrollIntoView({behavior:'smooth',block:'start'});}
+function li(items){return '<ul>'+items.map(x=>'<li>'+x+'</li>').join('')+'</ul>';}
+function analyzeCCS(){
+  const sex=v('ccsSex'),age=parseInt(v('ccsAge'),10),ecg=v('ccsECG'),sym=symptomType();
+  const missing=[];
+  if(!sex)missing.push('เพศ');
+  if(Number.isNaN(age))missing.push('อายุ');
+  if(!Number.isNaN(age)&&age<30)missing.push('อายุต่ำกว่า 30 ปี: scoring table ที่ให้มาเริ่มที่ 30–39 ปี จึงไม่ extrapolate');
+  if(!sym)missing.push('รูปแบบอาการสำหรับคำนวณ Symptom score');
+  if(ecg==='unknown')missing.push('ผล Resting ECG');
+  if(missing.length)return box('warn','ข้อมูลยังไม่ครบสำหรับประเมิน CCS',summaryLine('INDETERMINATE','ข้อมูลไม่ครบ')+li(missing));
+
+  const ss=symptomScore(),rf=ccsRF(),band=ageBand(age);
+  if(band<0)return box('warn','ประเมิน Clinical likelihood ไม่ได้',summaryLine('INDETERMINATE','คำนวณ Clinical likelihood ไม่ได้')+'<p>อายุต่ำกว่า 30 ปีไม่มีค่าในตารางที่ให้มา.</p>');
+  const key=ss<=1?'0-1':String(ss),cl=likelihood[key][sex][band][rfCol(rf)];
+  const isECG=ischemicECG('ccsECG'),echoStatus=ccsEchoStatus(),echo=echoStatus.abnormal;
+  const tpos=testPos('ccs'),tests=positiveTests('ccs'),selectedIncomplete=incompleteSelectedTests('ccs');
+
+  const c1=cl>=16&&(isECG||(!isECG&&echoStatus.done&&echo));
+  const c2=cl<16&&isECG&&echoStatus.done&&echo;
+  const c3=!c1&&!c2&&tpos;
+  const pass=c1||c2||c3;
+  const criterion=c1?'CCS criterion 1':c2?'CCS criterion 2':c3?'CCS criterion 3':'';
+
+  // If a qualifying branch depends on an unperformed Echo, do not misclassify as failure.
+  const echoCouldChangeDecision =
+    (!pass && !tpos) &&
+    ((cl>=16&&!isECG&&!echoStatus.done) || (cl<16&&isECG&&!echoStatus.done));
+
+  if(echoCouldChangeDecision){
+    const reason = cl>=16&&!isECG
+      ? 'Clinical likelihood ≥16 และ ECG ไม่เข้า ischemic ECG: ต้องมี Echo เพื่อดู RWMA หรือ LVEF <40% สำหรับ criterion 1 หรือมี qualifying test สำหรับ criterion 3.'
+      : 'Clinical likelihood <16 และมี ischemic ECG: ต้องมี Echo เพื่อดู RWMA หรือ LVEF <40% สำหรับ criterion 2 หรือมี qualifying test สำหรับ criterion 3.';
+    return box('warn','ยังสรุป PA-CAG ไม่ได้', summaryLine('INDETERMINATE','ต้องการข้อมูลเพิ่มเติม')+'<p>'+reason+'</p>');
+  }
+
+  let docs=[];
+  if(!c('ccsDocECG'))docs.push('Resting ECG (mandatory สำหรับ CCS)');
+  if(c3)docs=docs.concat(missingDocsForTests('ccs',tests));
+
+  const riskClass=cl<=5?'Very low':cl<=15?'Low':'Moderate';
+  const metrics='<div class="metrics"><div class="metric"><span>Symptom score</span><b>'+ss+'</b></div><div class="metric"><span>Risk factors</span><b>'+rf+'</b></div><div class="metric"><span>Clinical likelihood</span><b>'+cl+'</b></div><div class="metric"><span>Class</span><b>'+riskClass+'</b></div></div>';
+  const detail=li([
+    'Ischemic ECG: '+(isECG?'Yes':'No'),
+    'Echo: '+(!echoStatus.done?'ไม่ได้ทำ/ไม่มีผล':(echo?'ผิดปกติ (RWMA หรือ LVEF <40%)':'ไม่เข้าเกณฑ์ RWMA/LVEF <40%')),
+    'Qualifying ischemia/anatomic test: '+(tpos?('Yes — '+tests.join(', ')):'No')
+  ]);
+
+  const incompleteNote = selectedIncomplete.length
+    ? '<div class="note"><b>มีการเลือกว่าทำการตรวจ แต่ยังไม่ได้ระบุผล:</b>'+li(selectedIncomplete)+'</div>'
+    : '';
+
+  if(pass){
+    return box(
+      docs.length?'warn':'ok',
+      docs.length?'เข้าเกณฑ์ทางคลินิก แต่หลักฐานยังไม่ครบ':'น่าจะเข้าเกณฑ์ PA-CAG',
+      summaryLine('MET',criterion)+metrics+'<p><b>'+criterion+'</b></p>'+detail+incompleteNote+
+      (docs.length?'<div class="note"><b>เอกสารที่ควรเติม</b>'+li(docs)+'</div>':'')
+    );
+  }
+  return box('bad','จากข้อมูลที่กรอก ยังไม่เข้าเกณฑ์ PA-CAG',
+    summaryLine('NOT MET','ไม่เข้า CCS criterion 1, 2 หรือ 3')+metrics+detail+incompleteNote+
+    '<div class="note">ไม่เข้า CCS criterion 1, 2 หรือ 3 จากข้อมูลที่กรอก. นี่ไม่ใช่การปฏิเสธ PA จริง.</div>');
+}
+function analyzeICM(){
+  const age=parseInt(v('icmAge'),10),ef=parseFloat(v('icmEF')),ecg=v('icmECG');const miss=[];if(Number.isNaN(age))miss.push('อายุ');if(Number.isNaN(ef))miss.push('LVEF');if(ecg==='unknown')miss.push('ผล Resting ECG');if(miss.length)return box('warn','ข้อมูลยังไม่ครบสำหรับประเมิน Ischemic cardiomyopathy',summaryLine('INDETERMINATE','ข้อมูลไม่ครบ')+li(miss));
+  const dys=c('icmLDL')||c('icmHDL')||c('icmLipidRx'),rf=c('icmDM')||c('icmHT')||c('icmSmoke')||dys,isECG=ischemicECG('icmECG'),tpos=testPos('icm'),tests=positiveTests('icm'),selectedIncomplete=incompleteSelectedTests('icm');
+  const efQual=ef<40, dcm=c('icmDCM'),global=c('icmGlobal');
+  // Source criterion requires dilated cardiomyopathy + LVEF<40; note defines cardiomyopathy echo as global hypokinesia + LVEF<40.
+  // For decision support: criterion is considered clinically supported if DCM is documented; global hypokinesia is displayed as source-note corroboration, not silently substituted.
+  const echoCriterion=dcm&&efQual;
+  let pass=false,reason='';
+  if((age>=40||rf)&&echoCriterion){pass=true;reason='ICM criterion 1: อายุ ≥40 ปี หรือมี ≥1 risk factor + dilated cardiomyopathy + LVEF <40%';}
+  else if(age<40&&!rf&&echoCriterion&&(isECG||tpos)){pass=true;reason='ICM criterion 2: อายุ <40 ปี และไม่มี risk factor + dilated cardiomyopathy/LVEF <40% + ischemic ECG หรือ qualifying ischemia test';}
+  let docs=[];if(!c('icmDocECG'))docs.push('Resting ECG (mandatory)');if(!c('icmDocEcho'))docs.push('Official echocardiography report (mandatory)');if(age<40&&!rf&&!isECG&&tpos)docs=docs.concat(missingDocsForTests('icm',tests));
+  const details=li(['Age ≥40: '+(age>=40?'Yes':'No'),'≥1 specified risk factor: '+(rf?'Yes':'No'),'Dilated cardiomyopathy/LV dilatation documented: '+(dcm?'Yes':'No'),'LV global hypokinesia: '+(global?'Yes':'No'),'LVEF <40%: '+(efQual?'Yes ('+ef+'%)':'No ('+ef+'%)'),'Ischemic ECG: '+(isECG?'Yes':'No'),'Qualifying ischemia test: '+(tpos?('Yes — '+tests.join(', ')):'No')]);
+  const incompleteNote=selectedIncomplete.length?'<div class="note"><b>มีการเลือกว่าทำการตรวจ แต่ยังไม่ได้ระบุผล:</b>'+li(selectedIncomplete)+'</div>':'';
+  const wording='<div class="info"><b>Source wording check:</b> criterion ใช้ “dilated cardiomyopathy + LVEF &lt;40%”; หมายเหตุใช้ “LV global hypokinesia + LVEF &lt;40%”. โปรแกรมใช้ DCM/LV dilatation เป็นตัวตัดสิน criterion และแสดง global hypokinesia แยกให้ auditor review.</div>';
+  if(pass)return box(docs.length?'warn':'ok',docs.length?'เข้าเกณฑ์ทางคลินิก แต่หลักฐานยังไม่ครบ':'น่าจะเข้าเกณฑ์ PA-CAG',summaryLine('MET',reason.indexOf('criterion 1')>=0?'ICM criterion 1':'ICM criterion 2')+'<p><b>'+reason+'</b></p>'+details+incompleteNote+wording+(docs.length?'<div class="note"><b>เอกสารที่ควรเติม</b>'+li(docs)+'</div>':''));
+  return box('bad','จากข้อมูลที่กรอก ยังไม่เข้าเกณฑ์ PA-CAG',summaryLine('NOT MET','ไม่เข้า ICM criterion')+details+incompleteNote+wording);
+}
+function analyzePre(){
+  const sex=v('preSex'),age=parseInt(v('preAge'),10);if(!sex||Number.isNaN(age))return box('warn','ข้อมูลยังไม่ครบสำหรับ Pre-operative',summaryLine('INDETERMINATE','ข้อมูลไม่ครบ')+'<p>กรุณาระบุเพศและอายุ.</p>');
+  const c1=(sex==='M'&&age>=45)||(sex==='F'&&age>=50)||c('prePremeno');
+  const c2=c('preSymptoms');
+  const c3=c('preMI')||c('prePCI')||c('preCABG');
+  const dys=c('preLDL')||c('preHDL')||c('preLipidRx');
+  const c4=c('preDM')||c('preHT')||dys||c('preSmoke')||c('preFH');
+  const passed=[];if(c1)passed.push('เกณฑ์อายุ/เพศ หรือ premature menopause');if(c2)passed.push('Ischemic symptoms');if(c3)passed.push('Previous MI/PCI/CABG');if(c4)passed.push('≥1 CAD risk factor ตามรายการ');
+  if(passed.length)return box('ok','น่าจะเข้าเกณฑ์ PA-CAG',summaryLine('MET','Pre-operative criterion')+'<p>พบอย่างน้อยหนึ่ง pre-operative criterion:</p>'+li(passed)+'<div class="info">ตารางหลักฐานใน workflow ไม่กำหนด investigation mandatory สำหรับ pre-operative แต่สามารถแนบเอกสารที่เกี่ยวข้องตามความจำเป็น.</div>');
+  return box('bad','จากข้อมูลที่กรอก ยังไม่เข้าเกณฑ์ PA-CAG',summaryLine('NOT MET','ไม่พบ qualifying pre-operative criterion')+'<p>ไม่พบเกณฑ์อายุ/อาการ/previous CAD/ปัจจัยเสี่ยงตาม pre-operative criteria ที่ให้มา.</p>');
+}
+window.analyzePA=function(){const p=getSelectedPathway();if(p==='ccs')return analyzeCCS();if(p==='icm')return analyzeICM();if(p==='preop')return analyzePre();return box('warn','ไม่ใช่ PA-CAG pathway ก่อนทำหัตถการ',summaryLine('PA NOT REQUIRED','ตาม acute pathway')+'<p>NSTE-ACS / STE-ACS / post-cardiac arrest ตาม workflow ที่ให้มา สามารถทำ CAG ± PCI แล้วเข้าสู่ pre-payment audit โดยไม่ต้องรอ PA-CAG ก่อน.</p>');};
+window.resetForm=function(){
+  document.querySelectorAll('input').forEach(el=>{
+    if(el.type==='checkbox'||el.type==='radio')el.checked=false;
+    else el.value='';
+  });
+  document.querySelectorAll('select').forEach(el=>el.selectedIndex=0);
+  const firstTab=g('tab-ccs'); if(firstTab)firstTab.checked=true;
+  g('output').innerHTML='';
+  syncTabPanels();
+  syncSymptomUI();
+  updateSymptomScorePreview();
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+})();
+
+document.addEventListener('DOMContentLoaded', function(){
+  syncTabPanels();
+  syncSymptomUI();
+  updateSymptomScorePreview();
+
+  document.querySelectorAll('input[name="pathwayTab"]').forEach(function(r){
+    r.addEventListener('change', function(){
+      syncTabPanels();
+      const output=document.getElementById('output');
+      if(output)output.innerHTML='';
+    });
+  });
+
+  document.querySelectorAll('input[name="ccsSymType"], #ccsCp1, #ccsCp2, #ccsCp3').forEach(function(el){
+    el.addEventListener('change', function(){
+      syncSymptomUI();
+      updateSymptomScorePreview();
+    });
+  });
+});
+
+</script>
+</body>
+</html>
