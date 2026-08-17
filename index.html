@@ -854,7 +854,7 @@ window.sendFeedbackEmail=function(){
   
   <div class="sticky action-grid google-actions">
     <button class="btn primary" type="button" onclick="analyzePA()">วิเคราะห์โอกาสผ่าน PA</button>
-    <button class="btn pdf-btn" type="button" onclick="exportPDF()" title="สร้าง PDF ที่ server แล้วดาวน์โหลดโดยตรง">Export PDF</button>
+    <button class="btn pdf-btn" type="button" onclick="exportPDF()" title="สร้าง PDF และดาวน์โหลดได้โดยไม่ต้อง Sign in">Export PDF</button>
     <button id="saveGoogleBtn" class="btn google-save-btn" type="button" onclick="saveAssessmentToGoogle()" disabled title="PDF จะสร้างที่ Google Apps Script และบันทึกเข้า Drive">บันทึก Assessment + PDF</button>
     <button class="btn secondary reset-btn" type="button" onclick="resetForm()">ล้างข้อมูล</button>
   </div>
@@ -1156,7 +1156,7 @@ function pathwayLabel(){
 
 
 const CLOUD_AUTH={idToken:null,email:null,authorized:false,clientId:null};
-const APP_VERSION='Google-linked direct server PDF 1';
+const APP_VERSION='Public direct export + authenticated cloud save 1';
 
 function safeText(x){return String(x??'').replace(/\s+/g,' ').trim();}
 function cleanFilenamePart(x){return safeText(x).replace(/[\\/:*?"<>|]+/g,'-').replace(/\s+/g,'-')||'No-HN';}
@@ -1377,11 +1377,6 @@ function restorePrintReport(ctx){
 window.exportPDF=async function(){
   const btn=document.querySelector('button[onclick="exportPDF()"]');
 
-  if(!CLOUD_AUTH.authorized||!CLOUD_AUTH.idToken){
-    showToast('กรุณา Sign in with Google ก่อน Export PDF');
-    return;
-  }
-
   const hn=safeText(v('patientHN'));
   if(!hn){
     showToast('กรุณากรอก HN ก่อน Export PDF');
@@ -1402,21 +1397,13 @@ window.exportPDF=async function(){
     const res=await fetch('/api/export-pdf',{
       method:'POST',
       headers:{
-        'Content-Type':'application/json',
-        'Authorization':'Bearer '+CLOUD_AUTH.idToken
+        'Content-Type':'application/json'
       },
       body:JSON.stringify({
         assessment,
         pdfFilename:pdfFilename()
       })
     });
-
-    if(res.status===401){
-      CLOUD_AUTH.idToken=null;
-      CLOUD_AUTH.authorized=false;
-      updateAuthUI();
-      throw new Error('Google session หมดอายุ กรุณา Sign in ใหม่');
-    }
 
     if(!res.ok){
       const data=await res.json().catch(()=>({}));
