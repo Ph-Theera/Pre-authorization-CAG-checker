@@ -293,6 +293,37 @@ body:has(#ccsSymCP:checked) #ccsChestPainCriteria{display:block}
   #feedbackSection{display:none!important}
 }
 
+
+.feedback-compact{margin:14px 0 0;border:1px solid #d8e0eb;border-radius:14px;background:#fff;overflow:hidden}
+.feedback-compact>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;color:#344054}
+.feedback-compact>summary::-webkit-details-marker{display:none}
+.feedback-compact>summary span:first-child{display:flex;flex-direction:column;gap:1px}
+.feedback-compact>summary b{font-size:14px}
+.feedback-compact>summary small{color:var(--muted);font-size:11px;font-weight:500}
+.feedback-chevron{flex:0 0 26px;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#eef4ff;color:#1268d6;font-size:18px;font-weight:900}
+.feedback-compact[open] .feedback-chevron{font-size:0}
+.feedback-compact[open] .feedback-chevron:after{content:"–";font-size:18px}
+.feedback-body{border-top:1px solid #e4e9f0;padding:11px 13px 13px;background:#fbfcfe}
+.feedback-body .feedback-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.feedback-message{margin-top:8px}
+.feedback-compact textarea{width:100%;box-sizing:border-box;resize:vertical;min-height:78px;border:1px solid var(--line);border-radius:10px;padding:9px 10px;font:inherit;color:inherit;background:#fff}
+.feedback-actions.compact{display:flex;align-items:center;gap:10px;margin-top:8px}
+.feedback-actions.compact .btn{padding:9px 13px;min-height:auto;font-size:13px}
+.feedback-actions.compact .feedback-to{font-size:11px;color:var(--muted)}
+@media(max-width:700px){.feedback-body .feedback-grid{grid-template-columns:1fr}}
+@media print{#feedbackSection{display:none!important}}
+
+
+.patient-id-card{padding:14px 16px;margin-top:10px}
+.patient-id-row{display:grid;grid-template-columns:minmax(180px,320px) 1fr;gap:14px;align-items:end}
+.patient-id-row .field{margin:0}
+.hn-hint{font-size:12px;color:var(--muted);line-height:1.45;padding-bottom:10px}
+@media(max-width:700px){
+  .patient-id-row{grid-template-columns:1fr}
+  .hn-hint{padding-bottom:0;margin-top:-4px}
+}
+@media print{.patient-id-card{display:none!important}}
+
 </style>
 
   <!-- Vercel Web Analytics: enable Analytics in the Vercel project dashboard, then redeploy -->
@@ -355,6 +386,17 @@ window.sendFeedbackEmail=function(){
       <label for="tab-acute" role="tab">ACS /<br>Post-arrest</label>
     </div>
 
+  <div class="card patient-id-card">
+    <div class="patient-id-row">
+      <div class="field">
+        <label class="title" for="patientHN">HN</label>
+        <input id="patientHN" type="text" autocomplete="off" placeholder="กรอก HN เช่น 1234567">
+      </div>
+      <div class="hn-hint">HN จะถูกใช้ในรายงานและเป็นชื่อไฟล์เมื่อ Export PDF</div>
+    </div>
+  </div>
+
+
 <section class="card pathbox tab-panel" data-path="ccs" id="ccsSection">
     <div class="path-title"><div><div class="smallcaps">PATHWAY A</div>
 
@@ -400,7 +442,7 @@ window.sendFeedbackEmail=function(){
         <label class="choice-card">
           <input type="radio" name="ccsSymType" id="ccsSymDOE" value="doe">
           <span>
-            <b>เหนื่อยง่ายเวลาออกแรง/ออกกำลังกาย โดยไม่มีอาการเจ็บหน้าอก</b>
+            <b>เหนื่อยง่ายเวลาออกแรง/ออกกำลังกาย โดยไม่มีอาการเจ็บหน้าอก (angina equivalent)</b>
             <small>กำหนด Symptom score = 2 คะแนน</small>
           </span>
         </label>
@@ -741,8 +783,6 @@ window.sendFeedbackEmail=function(){
   
   <div class="sticky action-grid">
     <button class="btn primary" type="button" onclick="analyzePA()">วิเคราะห์โอกาสผ่าน PA</button>
-    <button class="btn secondary" type="button" onclick="saveDraft()">บันทึกแบบร่าง</button>
-    <button class="btn secondary" type="button" onclick="loadDraft()">โหลดแบบร่าง</button>
     <button class="btn pdf-btn" type="button" onclick="exportPDF()">Export / Save PDF</button>
     <button class="btn secondary reset-btn" type="button" onclick="resetForm()">ล้างข้อมูลทั้งหมด</button>
   </div>
@@ -751,47 +791,40 @@ window.sendFeedbackEmail=function(){
   <div id="output" aria-live="polite"></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   
-  <section class="card feedback-card" id="feedbackSection">
-    <div class="feedback-head">
-      <div>
-        <h2>ข้อเสนอแนะ / Feedback</h2>
-        <p>พบจุดที่ควรแก้ไข มีข้อเสนอแนะ หรือพบกรณีที่ผลประเมินไม่ตรงกับบริบททางคลินิก สามารถส่งข้อเสนอแนะถึงผู้พัฒนาได้</p>
+  
+  <details class="feedback-compact" id="feedbackSection">
+    <summary>
+      <span><b>ข้อเสนอแนะ / Feedback</b><small>แจ้งข้อผิดพลาดหรือเสนอแนะการปรับปรุง</small></span>
+      <span class="feedback-chevron">+</span>
+    </summary>
+    <div class="feedback-body">
+      <div class="feedback-grid">
+        <div class="field">
+          <label class="title" for="feedbackTopic">หัวข้อ</label>
+          <select id="feedbackTopic">
+            <option value="Clinical criteria / logic">Clinical criteria / logic</option>
+            <option value="UI / usability">UI / usability</option>
+            <option value="Bug / technical issue">Bug / technical issue</option>
+            <option value="Document / evidence requirement">Document / evidence requirement</option>
+            <option value="Other suggestion">Other suggestion</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="title" for="feedbackRole">ผู้เสนอแนะ / หน่วยงาน (ไม่บังคับ)</label>
+          <input id="feedbackRole" type="text" placeholder="เช่น Cardiologist, Nurse, Cath lab">
+        </div>
       </div>
-      <span class="feedback-badge">PSU Heart Center</span>
-    </div>
-
-    <div class="feedback-grid">
-      <div class="field">
-        <label class="title" for="feedbackRole">ผู้เสนอแนะ / หน่วยงาน (ไม่บังคับ)</label>
-        <input id="feedbackRole" type="text" placeholder="เช่น Cardiologist, Nurse, Cath lab">
+      <div class="field feedback-message">
+        <label class="title" for="feedbackText">ข้อเสนอแนะ</label>
+        <textarea id="feedbackText" rows="3" placeholder="ระบุข้อเสนอแนะโดยไม่ใส่ข้อมูลที่ระบุตัวผู้ป่วยได้"></textarea>
       </div>
-
-      <div class="field">
-        <label class="title" for="feedbackTopic">หัวข้อ</label>
-        <select id="feedbackTopic">
-          <option value="Clinical criteria / logic">Clinical criteria / logic</option>
-          <option value="UI / usability">UI / usability</option>
-          <option value="Bug / technical issue">Bug / technical issue</option>
-          <option value="Document / evidence requirement">Document / evidence requirement</option>
-          <option value="Other suggestion">Other suggestion</option>
-        </select>
+      <div class="feedback-actions compact">
+        <button class="btn primary" type="button" onclick="sendFeedbackEmail()">ส่งข้อเสนอแนะ</button>
+        <span class="feedback-to">ส่งถึงผู้พัฒนา</span>
       </div>
     </div>
+  </details>
 
-    <div class="field">
-      <label class="title" for="feedbackText">ข้อเสนอแนะ</label>
-      <textarea id="feedbackText" rows="5" placeholder="กรุณาระบุรายละเอียดที่ต้องการเสนอแนะ..."></textarea>
-    </div>
-
-    <div class="feedback-actions">
-      <button class="btn primary" type="button" onclick="sendFeedbackEmail()">ส่งข้อเสนอแนะทางอีเมล</button>
-      <span class="feedback-to">To: ph.theera13@gamil.com</span>
-    </div>
-
-    <div class="privacy-note">
-      กรุณาไม่ใส่ชื่อผู้ป่วย เลขบัตรประชาชน HN หรือข้อมูลสุขภาพที่สามารถระบุตัวบุคคลได้ในช่องข้อเสนอแนะ
-    </div>
-  </section>
 
 <div class="footer">เครื่องมือนี้เป็น decision support จากเกณฑ์ สปสช. ไม่ใช่การอนุมัติจาก สปสช. และไม่แทน physician auditor. เมื่อข้อมูลที่จำเป็นไม่ครบ ระบบจะรายงานว่า “ข้อมูลไม่ครบ/ประเมินไม่ได้” แทนการเดา.</div>
 </div>
@@ -1049,26 +1082,50 @@ function pathwayLabel(){
 }
 
 window.exportPDF=function(){
-  // Re-analyze immediately before rendering the report.
   analyzePA();
+
+  const hnRaw=(document.getElementById('patientHN')?.value||'').trim();
+  const hnSafe=hnRaw
+    ? hnRaw.replace(/[\\/:*?"<>|]+/g,'-').replace(/\s+/g,'-')
+    : 'No-HN';
+
+  const now=new Date();
+  const y=now.getFullYear();
+  const m=String(now.getMonth()+1).padStart(2,'0');
+  const d=String(now.getDate()).padStart(2,'0');
+  const suggestedName='PA-CAG_'+hnSafe+'_'+y+'-'+m+'-'+d;
 
   const meta=document.getElementById('printMeta');
   if(meta){
     meta.innerHTML='<b>PA-CAG Assessment Report</b><br>'+
+      'HN: '+(hnRaw||'-')+'<br>'+
       'Pathway: '+pathwayLabel()+'<br>'+
-      'Generated: '+new Date().toLocaleString('th-TH');
+      'Generated: '+now.toLocaleString('th-TH');
   }
 
-  // Open the concise criterion context in the active pathway for the PDF.
+  const oldTitle=document.title;
+  document.title=suggestedName;
+
   const active=document.querySelector('.tab-panel.active-tab-panel');
   const details=active?Array.from(active.querySelectorAll('details.criteria-summary')):[];
   details.forEach(d=>{ d.dataset.wasOpen=d.open?'1':'0'; d.open=true; });
 
+  let restored=false;
+  const restore=function(){
+    if(restored)return;
+    restored=true;
+    document.title=oldTitle;
+    details.forEach(d=>{
+      if(d.dataset.wasOpen!=='1')d.open=false;
+      delete d.dataset.wasOpen;
+    });
+    window.removeEventListener('afterprint',restore);
+  };
+  window.addEventListener('afterprint',restore);
+
   setTimeout(()=>{
     window.print();
-    setTimeout(()=>{
-      details.forEach(d=>{ if(d.dataset.wasOpen!=='1')d.open=false; delete d.dataset.wasOpen; });
-    },300);
+    setTimeout(restore,2500);
   },120);
 };
 
