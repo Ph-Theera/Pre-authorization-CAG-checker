@@ -1,0 +1,29 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "functions": {
+    "api/auth-check.mjs": {
+      "maxDuration": 30
+    },
+    "api/config.mjs": {
+      "maxDuration": 30
+    },
+    "api/save-assessment.mjs": {
+      "maxDuration": 30
+    },
+    "api/export-pdf.mjs": {
+      "maxDuration": 30
+    }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin-allow-popups"
+        }
+      ]
+    }
+  ]
+}
