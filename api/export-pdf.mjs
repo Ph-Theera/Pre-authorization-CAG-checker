@@ -1,4 +1,8 @@
-import {verifyAuthorizedRequest, json} from '../lib/googleAuth.mjs';
+import {json} from '../lib/googleAuth.mjs';
+
+const ALLOWED_ORIGINS = new Set([
+  'https://pre-authorization-cag-checker.vercel.app'
+]);
 
 export default {
   async fetch(request) {
@@ -7,13 +11,27 @@ export default {
     }
 
     try{
-      const user=await verifyAuthorizedRequest(request);
+      /*
+        Export PDF is intentionally public.
+        It does NOT append to Google Sheet and does NOT retain the PDF in Drive.
+
+        The Origin check is a basic abuse-reduction measure, not an authentication boundary.
+      */
+      const origin=request.headers.get('origin')||'';
+      if(origin && !ALLOWED_ORIGINS.has(origin)){
+        return json({error:'Origin not allowed'},403);
+      }
 
       const appsScriptUrl=process.env.APPS_SCRIPT_URL;
       const appsScriptSecret=process.env.APPS_SCRIPT_SECRET;
 
       if(!appsScriptUrl||!appsScriptSecret){
         return json({error:'Server missing Apps Script configuration'},500);
+      }
+
+      const contentLength=Number(request.headers.get('content-length')||0);
+      if(contentLength>250000){
+        return json({error:'Request too large'},413);
       }
 
       const body=await request.json();
@@ -34,12 +52,7 @@ export default {
         body:JSON.stringify({
           secret:appsScriptSecret,
           action:'exportPdf',
-          assessment:{
-            ...a,
-            recordedBy:user.email,
-            googleUserId:user.sub,
-            recordedByName:user.name
-          },
+          assessment:a,
           pdfFilename:requestedName
         }),
         redirect:'follow'
