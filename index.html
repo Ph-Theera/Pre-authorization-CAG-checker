@@ -324,6 +324,60 @@ body:has(#ccsSymCP:checked) #ccsChestPainCriteria{display:block}
 }
 @media print{.patient-id-card{display:none!important}}
 
+
+/* ===== Google-linked record access ===== */
+.patient-id-row.google-enabled{grid-template-columns:minmax(190px,320px) minmax(280px,1fr);align-items:stretch}
+.cloud-auth-card{border:1px solid #d8e1ee;border-radius:13px;padding:11px 12px;background:#fbfcfe;display:flex;flex-direction:column;justify-content:center;gap:8px}
+.cloud-auth-title{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.cloud-auth-title>span:first-child{display:flex;flex-direction:column;gap:2px}
+.cloud-auth-title small{font-size:11px;color:var(--muted);font-weight:500;line-height:1.35}
+.auth-dot{width:10px;height:10px;border-radius:50%;background:#98a2b3;margin-top:4px;box-shadow:0 0 0 4px #98a2b31c}
+.auth-dot.ok{background:#22a06b;box-shadow:0 0 0 4px #22a06b1c}
+.auth-dot.bad{background:#d92d20;box-shadow:0 0 0 4px #d92d201c}
+.google-signin-slot{min-height:40px;display:flex;align-items:center}
+.auth-signed-in{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 9px;border-radius:10px;background:#edf8f1;border:1px solid #b8dec5}
+.auth-signed-in[hidden]{display:none!important}
+.auth-signed-in>div{display:flex;flex-direction:column;gap:1px;min-width:0}
+.auth-signed-in b{font-size:13px;overflow:hidden;text-overflow:ellipsis}
+.auth-signed-in small{font-size:11px;color:#37684a}
+.mini-btn{border:1px solid #b9c5d5;background:#fff;border-radius:9px;padding:6px 9px;font:inherit;font-size:11px;cursor:pointer;white-space:nowrap}
+.auth-config-message{font-size:11px;color:#a15c00;line-height:1.4}
+.google-save-btn{background:#147d64;color:#fff;border-color:#147d64}
+.google-save-btn:disabled{background:#bac5c2;border-color:#bac5c2;color:#fff;cursor:not-allowed;opacity:.78}
+.cloud-save-result{margin-top:10px}
+.cloud-save-result .save-card{border-radius:14px;padding:13px 14px;border:1px solid #b7ddc5;background:#eff9f2;color:#174c2d;line-height:1.55}
+.cloud-save-result .save-card.warn{border-color:#e7cb87;background:#fff8e8;color:#795a0b}
+.cloud-save-result .save-card.bad{border-color:#efb2ac;background:#fff1ef;color:#85271f}
+.cloud-save-result a{font-weight:800;color:inherit}
+.save-spinner{display:inline-block;width:14px;height:14px;border-radius:50%;border:2px solid #ffffff77;border-top-color:#fff;animation:spin .8s linear infinite;vertical-align:-2px;margin-right:7px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Compact HTML-generated PDF report */
+.pdf-render-root{position:fixed;left:-20000px;top:0;width:760px;background:#fff;color:#172b4d;padding:28px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,Arial,sans-serif;box-sizing:border-box}
+.pdf-report-title{border-bottom:3px solid #173b68;padding-bottom:10px;margin-bottom:12px}
+.pdf-report-title h1{font-size:24px;margin:0 0 4px;color:#173b68}
+.pdf-report-title p{margin:0;font-size:12px;color:#5b6879}
+.pdf-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px 18px;font-size:12px;margin:12px 0;padding:10px 12px;background:#f5f8fc;border:1px solid #d7e0eb;border-radius:10px}
+.pdf-section{margin-top:14px;break-inside:avoid}
+.pdf-section h2{font-size:15px;margin:0 0 7px;color:#173b68;border-bottom:1px solid #dce4ed;padding-bottom:5px}
+.pdf-input-table{width:100%;border-collapse:collapse;font-size:10px}
+.pdf-input-table td{border-bottom:1px solid #e8edf3;padding:5px 6px;vertical-align:top}
+.pdf-input-table td:first-child{width:45%;font-weight:700;color:#40546c}
+.pdf-result-clone{font-size:11px}
+.pdf-result-clone .result{box-shadow:none!important;margin:0!important}
+.pdf-criteria{font-size:10px;line-height:1.45;padding:9px 10px;border:1px solid #dfe6ef;border-radius:9px;background:#fbfcfe}
+.pdf-disclaimer{font-size:9px;line-height:1.45;color:#5d6878;border-top:1px solid #d5dce5;margin-top:16px;padding-top:8px}
+
+@media(max-width:760px){
+  .patient-id-row.google-enabled{grid-template-columns:1fr}
+  .google-actions{grid-template-columns:1fr 1fr}
+  .google-actions .primary,.google-actions .google-save-btn{grid-column:1/-1}
+  .google-actions .pdf-btn,.google-actions .reset-btn{grid-column:span 1}
+}
+@media print{
+  .cloud-auth-card,.cloud-save-result{display:none!important}
+}
+
 </style>
 
   <!-- Vercel Web Analytics: enable Analytics in the Vercel project dashboard, then redeploy -->
@@ -358,12 +412,18 @@ window.sendFeedbackEmail=function(){
     'Please note: No patient-identifiable information should be included.'
   ].join('\n');
 
-  const mailto='mailto:ph.theera13@gamil.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+  const mailto='mailto:ph.theera13@gmail.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
   window.location.href=mailto;
 };
 
 </script>
   <script defer src="/_vercel/insights/script.js"></script>
+
+
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- Pinned html2pdf.js bundle for client-side PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 </head>
 <body>
@@ -387,15 +447,27 @@ window.sendFeedbackEmail=function(){
     </div>
 
   <div class="card patient-id-card">
-    <div class="patient-id-row">
+    <div class="patient-id-row google-enabled">
       <div class="field">
         <label class="title" for="patientHN">HN</label>
         <input id="patientHN" type="text" autocomplete="off" placeholder="กรอก HN เช่น 1234567">
+        <div class="hn-hint">HN จะถูกบันทึกใน Google Sheet และใช้เป็นชื่อไฟล์ PDF</div>
       </div>
-      <div class="hn-hint">HN จะถูกใช้ในรายงานและเป็นชื่อไฟล์เมื่อ Export PDF</div>
+
+      <div class="cloud-auth-card">
+        <div class="cloud-auth-title">
+          <span><b>Google record access</b><small>เฉพาะบัญชีที่ได้รับอนุญาตจึงบันทึกลง Sheet / Drive ได้</small></span>
+          <span id="authDot" class="auth-dot"></span>
+        </div>
+        <div id="googleSignInButton" class="google-signin-slot"></div>
+        <div id="authSignedIn" class="auth-signed-in" hidden>
+          <div><b id="authEmail"></b><small id="authMessage">Authorized to save</small></div>
+          <button type="button" class="mini-btn" onclick="signOutGoogle()">Sign out</button>
+        </div>
+        <div id="authConfigMessage" class="auth-config-message"></div>
+      </div>
     </div>
   </div>
-
 
 <section class="card pathbox tab-panel" data-path="ccs" id="ccsSection">
     <div class="path-title"><div><div class="smallcaps">PATHWAY A</div>
@@ -781,14 +853,16 @@ window.sendFeedbackEmail=function(){
   </section>
 
   
-  <div class="sticky action-grid">
+  <div class="sticky action-grid google-actions">
     <button class="btn primary" type="button" onclick="analyzePA()">วิเคราะห์โอกาสผ่าน PA</button>
-    <button class="btn pdf-btn" type="button" onclick="exportPDF()">Export / Save PDF</button>
-    <button class="btn secondary reset-btn" type="button" onclick="resetForm()">ล้างข้อมูลทั้งหมด</button>
+    <button class="btn pdf-btn" type="button" onclick="exportPDF()">Export PDF</button>
+    <button id="saveGoogleBtn" class="btn google-save-btn" type="button" onclick="saveAssessmentToGoogle()" disabled>บันทึก Assessment + PDF</button>
+    <button class="btn secondary reset-btn" type="button" onclick="resetForm()">ล้างข้อมูล</button>
   </div>
 
   <div id="printMeta" class="print-meta"></div>
   <div id="output" aria-live="polite"></div>
+  <div id="cloudSaveResult" class="cloud-save-result" aria-live="polite"></div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   
   
@@ -1081,53 +1155,274 @@ function pathwayLabel(){
          'NSTE-ACS / STE-ACS / Post-cardiac arrest';
 }
 
-window.exportPDF=function(){
-  analyzePA();
 
-  const hnRaw=(document.getElementById('patientHN')?.value||'').trim();
-  const hnSafe=hnRaw
-    ? hnRaw.replace(/[\\/:*?"<>|]+/g,'-').replace(/\s+/g,'-')
-    : 'No-HN';
+const CLOUD_AUTH={idToken:null,email:null,authorized:false,clientId:null};
+const APP_VERSION='google-linked-v1';
 
-  const now=new Date();
-  const y=now.getFullYear();
-  const m=String(now.getMonth()+1).padStart(2,'0');
-  const d=String(now.getDate()).padStart(2,'0');
-  const suggestedName='PA-CAG_'+hnSafe+'_'+y+'-'+m+'-'+d;
+function safeText(x){return String(x??'').replace(/\s+/g,' ').trim();}
+function cleanFilenamePart(x){return safeText(x).replace(/[\\/:*?"<>|]+/g,'-').replace(/\s+/g,'-')||'No-HN';}
+function todayYmd(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');}
+function pdfFilename(){return 'PA-CAG_'+cleanFilenamePart(v('patientHN'))+'_'+todayYmd()+'.pdf';}
 
-  const meta=document.getElementById('printMeta');
-  if(meta){
-    meta.innerHTML='<b>PA-CAG Assessment Report</b><br>'+
-      'HN: '+(hnRaw||'-')+'<br>'+
-      'Pathway: '+pathwayLabel()+'<br>'+
-      'Generated: '+now.toLocaleString('th-TH');
+function updateAuthUI(){
+  const signed=g('authSignedIn'), slot=g('googleSignInButton'), dot=g('authDot'), save=g('saveGoogleBtn');
+  if(CLOUD_AUTH.authorized){
+    if(signed)signed.hidden=false;
+    if(slot)slot.style.display='none';
+    if(g('authEmail'))g('authEmail').textContent=CLOUD_AUTH.email||'';
+    if(dot){dot.classList.remove('bad');dot.classList.add('ok');}
+    if(save)save.disabled=false;
+  }else{
+    if(signed)signed.hidden=true;
+    if(slot)slot.style.display='flex';
+    if(dot){dot.classList.remove('ok');}
+    if(save)save.disabled=true;
   }
+}
 
-  const oldTitle=document.title;
-  document.title=suggestedName;
+async function checkGoogleCredential(idToken){
+  const res=await fetch('/api/auth-check',{method:'POST',headers:{'Authorization':'Bearer '+idToken}});
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok)throw new Error(data.error||'Google account is not authorized');
+  CLOUD_AUTH.idToken=idToken;
+  CLOUD_AUTH.email=data.email||'';
+  CLOUD_AUTH.authorized=!!data.authorized;
+  updateAuthUI();
+  return data;
+}
 
-  const active=document.querySelector('.tab-panel.active-tab-panel');
-  const details=active?Array.from(active.querySelectorAll('details.criteria-summary')):[];
-  details.forEach(d=>{ d.dataset.wasOpen=d.open?'1':'0'; d.open=true; });
-
-  let restored=false;
-  const restore=function(){
-    if(restored)return;
-    restored=true;
-    document.title=oldTitle;
-    details.forEach(d=>{
-      if(d.dataset.wasOpen!=='1')d.open=false;
-      delete d.dataset.wasOpen;
-    });
-    window.removeEventListener('afterprint',restore);
-  };
-  window.addEventListener('afterprint',restore);
-
-  setTimeout(()=>{
-    window.print();
-    setTimeout(restore,2500);
-  },120);
+window.handleGoogleCredential=async function(response){
+  try{
+    g('authConfigMessage').textContent='กำลังตรวจสิทธิ์...';
+    await checkGoogleCredential(response.credential);
+    g('authConfigMessage').textContent='';
+    showToast('ลงชื่อเข้าใช้แล้ว: '+CLOUD_AUTH.email);
+  }catch(err){
+    CLOUD_AUTH.idToken=null;CLOUD_AUTH.email=null;CLOUD_AUTH.authorized=false;updateAuthUI();
+    const msg=err.message||'บัญชีนี้ไม่ได้รับอนุญาต';
+    g('authConfigMessage').textContent=msg;
+    if(g('authDot'))g('authDot').classList.add('bad');
+  }
 };
+
+window.signOutGoogle=function(){
+  CLOUD_AUTH.idToken=null;CLOUD_AUTH.email=null;CLOUD_AUTH.authorized=false;
+  try{google.accounts.id.disableAutoSelect();}catch(e){}
+  updateAuthUI();
+  g('authConfigMessage').textContent='';
+  const slot=g('googleSignInButton');if(slot)slot.innerHTML='';
+  renderGoogleButton();
+};
+
+function renderGoogleButton(){
+  if(!CLOUD_AUTH.clientId)return;
+  if(!(window.google&&google.accounts&&google.accounts.id)){setTimeout(renderGoogleButton,250);return;}
+  const slot=g('googleSignInButton');if(!slot)return;
+  slot.innerHTML='';
+  google.accounts.id.initialize({client_id:CLOUD_AUTH.clientId,callback:handleGoogleCredential,ux_mode:'popup'});
+  google.accounts.id.renderButton(slot,{theme:'outline',size:'medium',shape:'rectangular',text:'signin_with',locale:'th'});
+}
+
+async function initGoogleRecordAccess(){
+  try{
+    const res=await fetch('/api/config',{cache:'no-store'});
+    const data=await res.json();
+    if(!res.ok||!data.googleClientId)throw new Error(data.error||'ยังไม่ได้ตั้ง GOOGLE_CLIENT_ID ใน Vercel');
+    CLOUD_AUTH.clientId=data.googleClientId;
+    renderGoogleButton();
+  }catch(err){
+    if(g('authConfigMessage'))g('authConfigMessage').textContent='Google record ยังไม่พร้อม: '+(err.message||err);
+  }
+}
+
+function selectedOptionText(el){
+  if(!el||el.tagName!=='SELECT')return '';
+  const opt=el.options[el.selectedIndex];return opt?safeText(opt.textContent):'';
+}
+function controlLabel(el){
+  if(!el)return '';
+  let lab=document.querySelector('label[for="'+CSS.escape(el.id)+'"]');
+  if(!lab&&el.closest('label'))lab=el.closest('label');
+  if(lab)return safeText(lab.textContent.replace('+',''));
+  const field=el.closest('.field');
+  if(field){const t=field.querySelector('.title');if(t)return safeText(t.textContent);}
+  return el.id;
+}
+function isActuallyVisible(el){return !!(el.offsetWidth||el.offsetHeight||el.getClientRects().length);}
+
+function collectHumanInputs(){
+  const active=document.querySelector('.tab-panel.active-tab-panel');
+  if(!active)return [];
+  const rows=[];
+  const radioHandled=new Set();
+  active.querySelectorAll('input,select,textarea').forEach(el=>{
+    if(!el.id||!isActuallyVisible(el))return;
+    if(el.type==='radio'){
+      if(radioHandled.has(el.name))return;radioHandled.add(el.name);
+      const checked=active.querySelector('input[name="'+CSS.escape(el.name)+'"]:checked');
+      rows.push([controlLabel(checked||el),checked?controlLabel(checked):'ไม่ได้เลือก']);
+      return;
+    }
+    if(el.type==='checkbox')rows.push([controlLabel(el),el.checked?'Yes':'No']);
+    else if(el.tagName==='SELECT')rows.push([controlLabel(el),selectedOptionText(el)||'—']);
+    else rows.push([controlLabel(el),safeText(el.value)||'—']);
+  });
+  return rows;
+}
+
+function collectRawInputs(){
+  const active=document.querySelector('.tab-panel.active-tab-panel');
+  const raw={};if(!active)return raw;
+  active.querySelectorAll('input,select,textarea').forEach(el=>{
+    if(!el.id)return;
+    raw[el.id]=(el.type==='checkbox'||el.type==='radio')?!!el.checked:el.value;
+  });
+  return raw;
+}
+
+function finalStatusFromOutput(){
+  const text=safeText(g('output')?.querySelector('.final-summary')?.textContent||'');
+  if(text.includes('PA NOT REQUIRED'))return 'PA NOT REQUIRED';
+  if(text.includes('INDETERMINATE'))return 'INDETERMINATE';
+  if(text.includes('NOT MET'))return 'NOT MET';
+  if(text.includes('MET'))return 'MET';
+  return 'UNKNOWN';
+}
+function qualifyingCriterionFromOutput(){
+  const text=safeText(g('output')?.querySelector('.final-summary')?.textContent||'');
+  const parts=text.split('—');return parts.length>1?safeText(parts.slice(1).join('—')):'';
+}
+
+function deriveMetrics(){
+  const p=getSelectedPathway();
+  const base={age:'',sex:'',symptomScore:'',riskFactorCount:'',clinicalLikelihood:'',clinicalLikelihoodCategory:'',criterion1:'',criterion2:'',criterion3:'',criterion4:'',ischemicECG:'',echoFinding:'',lvef:'',qualifyingTests:''};
+  if(p==='ccs'){
+    const age=parseInt(v('ccsAge'),10),sex=v('ccsSex'),ss=symptomScore(),rf=ccsRF(),band=ageBand(age);
+    const cl=(band>=0&&sex&&ss!==null)?likelihood[ss<=1?'0-1':String(ss)][sex][band][rfCol(rf)]:null;
+    const ie=ischemicECG('ccsECG'),es=ccsEchoStatus(),tp=testPos('ccs'),tests=positiveTests('ccs');
+    let c1='NOT APPLICABLE',c2='NOT APPLICABLE',c3='NOT MET';
+    if(cl!==null&&cl>=16){c1=ie?'MET':(!es.done?'INDETERMINATE':(es.abnormal?'MET':'NOT MET'));}
+    if(cl!==null&&cl<16){c2=!ie?'NOT MET':(!es.done?'INDETERMINATE':(es.abnormal?'MET':'NOT MET'));}
+    if(c1==='MET'||c2==='MET')c3='NOT REQUIRED';else c3=tp?'MET':(incompleteSelectedTests('ccs').length?'INDETERMINATE':'NOT MET');
+    Object.assign(base,{age:Number.isNaN(age)?'':age,sex,symptomScore:ss??'',riskFactorCount:rf,clinicalLikelihood:cl??'',clinicalLikelihoodCategory:cl===null?'':(cl<=5?'Very low':cl<=15?'Low':'Moderate'),criterion1:c1,criterion2:c2,criterion3:c3,ischemicECG:ie?'Yes':'No',echoFinding:!es.done?'Not performed / unavailable':(es.abnormal?'RWMA or LVEF <40%':'No qualifying RWMA/LVEF finding'),lvef:v('ccsEF'),qualifyingTests:tests.join(', ')});
+  }else if(p==='icm'){
+    const age=parseInt(v('icmAge'),10),ef=parseFloat(v('icmEF')),sex='';
+    const dys=c('icmLDL')||c('icmHDL')||c('icmLipidRx');
+    const rfCount=[c('icmDM'),c('icmHT'),c('icmSmoke'),dys].filter(Boolean).length;
+    const rf=rfCount>0, ie=ischemicECG('icmECG'),tp=testPos('icm'),tests=positiveTests('icm');
+    const echoCriterion=c('icmDCM')&&!Number.isNaN(ef)&&ef<40;
+    let c1=(age>=40||rf)?(echoCriterion?'MET':'NOT MET'):'NOT APPLICABLE';
+    let c2=(age<40&&!rf)?(echoCriterion&&(ie||tp)?'MET':'NOT MET'):'NOT APPLICABLE';
+    Object.assign(base,{age:Number.isNaN(age)?'':age,sex,riskFactorCount:rfCount,criterion1:c1,criterion2:c2,criterion3:'',criterion4:'',ischemicECG:ie?'Yes':'No',echoFinding:(c('icmDCM')?'Dilated cardiomyopathy documented; ':'')+(c('icmGlobal')?'Global hypokinesia; ':'')+(!Number.isNaN(ef)&&ef<40?'LVEF <40%':'LVEF not <40%'),lvef:Number.isNaN(ef)?'':ef,qualifyingTests:tests.join(', ')});
+  }else if(p==='preop'){
+    const age=parseInt(v('preAge'),10),sex=v('preSex');
+    const dys=c('preLDL')||c('preHDL')||c('preLipidRx');
+    const rfCount=[c('preDM'),c('preHT'),c('preSmoke'),dys,c('preFH')].filter(Boolean).length;
+    const q1=(sex==='M'&&age>=45)||(sex==='F'&&age>=50)||c('prePremeno');
+    const q2=c('preSymptoms'),q3=c('preMI')||c('prePCI')||c('preCABG'),q4=rfCount>0;
+    Object.assign(base,{age:Number.isNaN(age)?'':age,sex,riskFactorCount:rfCount,criterion1:q1?'MET':'NOT MET',criterion2:q2?'MET':'NOT MET',criterion3:q3?'MET':'NOT MET',criterion4:q4?'MET':'NOT MET'});
+  }else{
+    Object.assign(base,{criterion1:'NOT APPLICABLE',criterion2:'NOT APPLICABLE',criterion3:'NOT APPLICABLE',criterion4:'NOT APPLICABLE'});
+  }
+  return base;
+}
+
+function collectAssessmentData(){
+  const metrics=deriveMetrics();
+  const output=g('output');
+  const notes=output?Array.from(output.querySelectorAll('.note')).map(x=>safeText(x.textContent)).join(' | '):'';
+  return {
+    sourceAppVersion:APP_VERSION,
+    hn:safeText(v('patientHN')),
+    pathwayKey:getSelectedPathway(),
+    pathway:pathwayLabel(),
+    finalStatus:finalStatusFromOutput(),
+    qualifyingCriterion:qualifyingCriterionFromOutput(),
+    ...metrics,
+    missingInfoDocs:notes,
+    resultSummary:safeText(output?.innerText||''),
+    rawInputs:collectRawInputs(),
+    clientGeneratedAt:new Date().toISOString()
+  };
+}
+
+function buildPdfReportElement(assessment){
+  const root=document.createElement('div');root.className='pdf-render-root';
+  const inputRows=collectHumanInputs();
+  const criteria=document.querySelector('.tab-panel.active-tab-panel .criteria-body');
+  const result=g('output');
+  root.innerHTML=`<div class="pdf-report-title"><h1>PA-CAG Assessment Report</h1><p>Developed by PSU Heart Center · Developer: Theerapat Buppodom</p></div>
+    <div class="pdf-meta-grid">
+      <div><b>HN:</b> ${escapeHtml(assessment.hn||'-')}</div><div><b>Generated:</b> ${escapeHtml(new Date().toLocaleString('th-TH'))}</div>
+      <div><b>Pathway:</b> ${escapeHtml(assessment.pathway)}</div><div><b>Recorded user:</b> ${escapeHtml(CLOUD_AUTH.email||'Local export')}</div>
+      <div><b>Final status:</b> ${escapeHtml(assessment.finalStatus)}</div><div><b>Criterion:</b> ${escapeHtml(assessment.qualifyingCriterion||'-')}</div>
+    </div>
+    <div class="pdf-section"><h2>Assessment result</h2><div class="pdf-result-clone">${result?result.innerHTML:'-'}</div></div>
+    ${criteria?`<div class="pdf-section"><h2>เกณฑ์ สปสช. แบบย่อ</h2><div class="pdf-criteria">${criteria.innerHTML}</div></div>`:''}
+    <div class="pdf-section"><h2>ข้อมูลที่ใช้ประเมิน</h2><table class="pdf-input-table">${inputRows.map(r=>`<tr><td>${escapeHtml(r[0])}</td><td>${escapeHtml(r[1])}</td></tr>`).join('')}</table></div>
+    <div class="pdf-disclaimer">เครื่องมือนี้เป็น decision support จากเกณฑ์ สปสช. ไม่ใช่การอนุมัติจาก สปสช. และไม่แทน physician auditor. เมื่อข้อมูลที่จำเป็นไม่ครบ ระบบจะรายงานว่า “ข้อมูลไม่ครบ/ประเมินไม่ได้” แทนการเดา.</div>`;
+  document.body.appendChild(root);return root;
+}
+function escapeHtml(s){return String(s??'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));}
+
+async function generatePdfBlob(assessment){
+  if(typeof html2pdf==='undefined')throw new Error('PDF library โหลดไม่สำเร็จ');
+  const root=buildPdfReportElement(assessment);
+  try{
+    if(document.fonts&&document.fonts.ready)await document.fonts.ready;
+    const opt={margin:[7,7,8,7],image:{type:'jpeg',quality:0.82},html2canvas:{scale:1.25,useCORS:true,backgroundColor:'#ffffff',logging:false},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},pagebreak:{mode:['css','legacy'],avoid:['.final-summary','.metrics','.pdf-meta-grid']}};
+    return await html2pdf().set(opt).from(root).outputPdf('blob');
+  }finally{root.remove();}
+}
+function downloadBlob(blob,filename){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);}
+function blobToBase64(blob){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]||'');r.onerror=reject;r.readAsDataURL(blob);});}
+
+window.exportPDF=async function(){
+  try{
+    analyzePA();
+    const assessment=collectAssessmentData();
+    const blob=await generatePdfBlob(assessment);
+    downloadBlob(blob,pdfFilename());
+    showToast('สร้าง PDF แล้ว');
+  }catch(err){alert('สร้าง PDF ไม่สำเร็จ: '+(err.message||err));}
+};
+
+window.saveAssessmentToGoogle=async function(){
+  const btn=g('saveGoogleBtn');
+  if(!CLOUD_AUTH.authorized||!CLOUD_AUTH.idToken){showToast('กรุณา Sign in with Google ก่อนบันทึก');return;}
+  const hn=safeText(v('patientHN'));
+  if(!hn){showToast('กรุณากรอก HN ก่อนบันทึก');g('patientHN')?.focus();return;}
+  analyzePA();
+  const assessment=collectAssessmentData();
+  const original=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span class="save-spinner"></span>กำลังบันทึก...';
+  const resultBox=g('cloudSaveResult');if(resultBox)resultBox.innerHTML='';
+  try{
+    let pdfBase64=null,pdfClientStatus='OK',filename=pdfFilename();
+    try{
+      const blob=await generatePdfBlob(assessment);
+      // Base64 adds ~33%; stay safely below Vercel Functions 4.5 MB request-body limit.
+      if(blob.size>2800000){pdfClientStatus='PDF_TOO_LARGE_FOR_UPLOAD';}
+      else pdfBase64=await blobToBase64(blob);
+    }catch(pdfErr){pdfClientStatus='PDF_GENERATION_FAILED: '+(pdfErr.message||pdfErr);}
+
+    const res=await fetch('/api/save-assessment',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+CLOUD_AUTH.idToken},body:JSON.stringify({assessment,pdfBase64,pdfFilename:filename,pdfClientStatus})});
+    const data=await res.json().catch(()=>({}));
+    if(res.status===401){CLOUD_AUTH.idToken=null;CLOUD_AUTH.authorized=false;updateAuthUI();throw new Error('Google session หมดอายุ กรุณา Sign in ใหม่');}
+    if(!res.ok||!data.ok)throw new Error(data.error||'บันทึกไม่สำเร็จ');
+    if(resultBox){
+      const warning=data.pdfStatus!=='UPLOADED';
+      resultBox.innerHTML='<div class="save-card '+(warning?'warn':'')+'"><b>บันทึก Assessment แล้ว</b><br>Assessment ID: '+escapeHtml(data.assessmentId||'-')+'<br>Recorded by: '+escapeHtml(data.recordedBy||CLOUD_AUTH.email)+'<br>PDF: '+escapeHtml(data.pdfStatus||'-')+(data.pdfUrl?'<br><a href="'+escapeHtml(data.pdfUrl)+'" target="_blank" rel="noopener">เปิด PDF ใน Google Drive</a>':'')+'</div>';
+      resultBox.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+    showToast('บันทึกลง Google Sheet แล้ว');
+  }catch(err){
+    if(resultBox)resultBox.innerHTML='<div class="save-card bad"><b>บันทึกไม่สำเร็จ</b><br>'+escapeHtml(err.message||err)+'</div>';
+  }finally{btn.innerHTML=original;btn.disabled=!CLOUD_AUTH.authorized;}
+};
+
+
+window.initGoogleRecordAccess=initGoogleRecordAccess;
+window.updateAuthUI=updateAuthUI;
 
 window.resetForm=function(){
   document.querySelectorAll('input').forEach(el=>{
@@ -1137,6 +1432,7 @@ window.resetForm=function(){
   document.querySelectorAll('select').forEach(el=>el.selectedIndex=0);
   const firstTab=g('tab-ccs'); if(firstTab)firstTab.checked=true;
   g('output').innerHTML='';
+  if(g('cloudSaveResult'))g('cloudSaveResult').innerHTML='';
   syncTabPanels();
   syncSymptomUI();
   updateSymptomScorePreview();
@@ -1148,6 +1444,8 @@ document.addEventListener('DOMContentLoaded', function(){
   syncTabPanels();
   syncSymptomUI();
   updateSymptomScorePreview();
+  window.initGoogleRecordAccess();
+  window.updateAuthUI();
 
   document.querySelectorAll('input[name="pathwayTab"]').forEach(function(r){
     r.addEventListener('change', function(){
