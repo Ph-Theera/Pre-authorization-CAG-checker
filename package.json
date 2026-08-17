@@ -1,0 +1,12 @@
+{
+  "name": "pa-cag-google-linked",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "google-auth-library": "10.5.0"
+  }
+}
